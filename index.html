@@ -310,9 +310,9 @@ Say it straight to my face (x2)
 </div>
 
 <script>
-const TAG_RE = /^[\[\(]\s*(verse|chorus|pre-?chorus|bridge|hook|intro|outro|refrain|interlude|breakdown|tag|drop|instrumental)\b[^\]\)]*[\]\)]\s*$/i;
-const LEADING_TAG_RE = /^[\[\(]\s*(verse|chorus|pre-?chorus|bridge|hook|intro|outro|refrain|interlude|breakdown|tag|drop|instrumental)\b[^\]\)]*[\]\)]\s*/i;
-const BARE_TAG_RE = /^(verse|chorus|pre-?chorus|bridge|hook|intro|outro|refrain|interlude|breakdown|tag|drop|instrumental)\s*\d*\s*:?$/i;
+const TAG_RE = /^[\[\(]\s*(verse|chorus|pre-?chorus|final-?chorus|bridge|hook|intro|outro|refrain|interlude|breakdown|tag|drop|instrumental)\b[^\]\)]*[\]\)]\s*$/i;
+const LEADING_TAG_RE = /^[\[\(]\s*(verse|chorus|pre-?chorus|final-?chorus|bridge|hook|intro|outro|refrain|interlude|breakdown|tag|drop|instrumental)\b[^\]\)]*[\]\)]\s*/i;
+const BARE_TAG_RE = /^(verse|chorus|pre-?chorus|final-?chorus|bridge|hook|intro|outro|refrain|interlude|breakdown|tag|drop|instrumental)\s*\d*\s*:?$/i;
 const REPEAT_LINE_RE = /^\(?\s*[a-zA-Z\u0E00-\u0E7F]*\s*[xX]\s*\d+\s*\)?$/;
 const REPEAT_TRAILING_RE = /\(\s*[xX]\s*\d+\s*\)\s*$/;
 const TRAILING_PUNCT_RE = /[.,;:'"”’…\-–—]+$/;

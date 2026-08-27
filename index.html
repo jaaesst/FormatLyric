@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>จัดเนื้อเพลงให้พร้อมส่ง DistroKid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10231f;
+    --bg-2: #16302a;
+    --paper: #f5f0e1;
+    --paper-2: #ece4cd;
+    --ink: #1f2a24;
+    --ink-soft: #4a564d;
+    --gold: #c9a227;
+    --gold-soft: #e4c667;
+    --red: #a83a32;
+    --red-soft: #cf6b62;
+    --teal: #3e7c74;
+    --line: rgba(31,42,36,0.14);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: radial-gradient(circle at 20% 0%, var(--bg-2), var(--bg) 60%);
+    color: var(--paper);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding: 28px 16px 60px;
+  }
+  .wrap{max-width:640px; margin:0 auto;}
+  header{margin-bottom:22px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color: var(--gold-soft);
+    margin-bottom:8px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:28px;
+    line-height:1.25;
+    margin:0 0 10px;
+    color:#fbf8ee;
+  }
+  .sub{
+    font-size:14.5px;
+    line-height:1.6;
+    color: rgba(245,240,225,0.72);
+    margin:0;
+  }
+  .rules{
+    margin-top:16px;
+    padding:14px 16px;
+    background: rgba(245,240,225,0.06);
+    border:1px solid rgba(245,240,225,0.14);
+    border-radius:10px;
+    font-size:13px;
+    line-height:1.7;
+    color: rgba(245,240,225,0.75);
+  }
+  .rules b{color:var(--gold-soft); font-weight:600;}
+
+  label.field-label{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color: var(--gold-soft);
+    margin: 26px 0 8px;
+  }
+  textarea{
+    width:100%;
+    min-height:260px;
+    resize:vertical;
+    background: var(--paper);
+    color: var(--ink);
+    border:none;
+    border-radius:12px;
+    padding:16px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:14.5px;
+    line-height:1.75;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(31,42,36,0.08);
+  }
+  textarea::placeholder{color: rgba(31,42,36,0.4);}
+
+  button.primary{
+    margin-top:16px;
+    width:100%;
+    padding:14px 18px;
+    border:none;
+    border-radius:10px;
+    background: var(--gold);
+    color:#1a1406;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.01em;
+    cursor:pointer;
+    transition: transform .12s ease, background .12s ease;
+  }
+  button.primary:active{transform: scale(0.98); background: var(--gold-soft);}
+
+  .result{display:none; margin-top:28px;}
+  .result.show{display:block;}
+
+  .sheet{
+    position:relative;
+    background: var(--paper);
+    background-image: repeating-linear-gradient(var(--paper) 0px, var(--paper) 27px, var(--paper-2) 28px);
+    border-radius:12px;
+    padding:20px 18px 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+  .sheet-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .sheet-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+    color: var(--ink-soft);
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+  .btn-group{display:flex; gap:8px;}
+  .copy-btn{
+    font-family:'Inter',sans-serif;
+    font-size:12.5px; font-weight:600;
+    background: var(--ink);
+    color: var(--paper);
+    border:none;
+    border-radius:7px;
+    padding:7px 12px;
+    cursor:pointer;
+  }
+  .copy-btn:active{transform: scale(0.97);}
+  .edit-btn{
+    font-family:'Inter',sans-serif;
+    font-size:12.5px; font-weight:600;
+    background: transparent;
+    color: var(--ink);
+    border:1.5px solid rgba(31,42,36,0.35);
+    border-radius:7px;
+    padding:6px 12px;
+    cursor:pointer;
+  }
+  .edit-btn:active{transform: scale(0.97);}
+  .edit-btn.editing{
+    background: var(--teal);
+    color: #eafaf6;
+    border-color: var(--teal);
+  }
+  pre.output{
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:14px;
+    line-height: 28px;
+    color: var(--ink);
+    margin:0;
+  }
+  textarea.output-edit{
+    display:none;
+    width:100%;
+    min-height: 260px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:14px;
+    line-height: 28px;
+    color: var(--ink);
+    background: var(--paper);
+    background-image: repeating-linear-gradient(var(--paper) 0px, var(--paper) 27px, var(--paper-2) 28px);
+    border:1.5px dashed var(--teal);
+    border-radius:8px;
+    padding:2px 4px;
+    margin:0;
+    resize: vertical;
+  }
+  .edit-hint{
+    display:none;
+    margin: 8px 2px 0;
+    font-size:12px;
+    line-height:1.55;
+    color: var(--ink-soft);
+  }
+  .edit-hint.show{display:block;}
+  .gap-marker{
+    color: var(--teal);
+    font-size:10.5px;
+    letter-spacing:.1em;
+    font-style:italic;
+    opacity:.6;
+  }
+
+  .stamp{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-size:12px;
+    color: var(--teal);
+    border:1.5px solid var(--teal);
+    border-radius:4px;
+    padding:2px 8px;
+    transform: rotate(3deg);
+    opacity:.85;
+  }
+
+  .panel{margin-top:18px;}
+  .panel h2{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+    color: var(--gold-soft);
+    margin:0 0 10px;
+  }
+  .fix-chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    font-size:12.5px;
+    background: rgba(62,124,116,0.18);
+    border:1px solid rgba(62,124,116,0.4);
+    color:#bfe3dc;
+    padding:6px 10px;
+    border-radius:20px;
+  }
+  ul.warn-list{
+    list-style:none; padding:0; margin:0;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  ul.warn-list li{
+    font-size:13.5px;
+    line-height:1.55;
+    padding:10px 12px;
+    background: rgba(168,58,50,0.12);
+    border-left:3px solid var(--red-soft);
+    border-radius:6px;
+    color:#f4dcd9;
+  }
+  .warn-mark{
+    font-family:'Fraunces',serif; font-style:italic;
+    color: var(--red-soft); margin-right:4px;
+  }
+  .empty-note{
+    font-size:13px; color: rgba(245,240,225,0.55);
+  }
+  footer{
+    margin-top:34px;
+    font-size:12px;
+    color: rgba(245,240,225,0.4);
+    line-height:1.6;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Lyric prep · DistroKid / Musixmatch</div>
+    <h1>จัดเนื้อเพลงให้พร้อมส่ง DistroKid</h1>
+    <p class="sub">วางเนื้อเพลง (จะมีแท็ก [Verse] [Chorus] หรือไม่ก็ได้) แล้วกดจัดฟอร์แมต ระบบจะตัดสิ่งที่ Musixmatch ไม่รับให้อัตโนมัติ และจะโน้ตจุดที่ต้องแก้เองไว้ให้</p>
+    <div class="rules">
+      สรุปกติกาหลักที่ระบบอ้างอิง: <b>ห้ามใส่แท็กท่อน/ชื่อนักร้อง</b> · <b>เขียนบรรทัดที่ซ้ำให้ครบ</b> ไม่ใช้ "x2" · <b>ขึ้นต้นบรรทัดด้วยตัวใหญ่</b> · <b>ท้ายบรรทัดห้ามมีวรรคตอน</b> ยกเว้น ! และ ? · ตัวเลข 1–10 ให้สะกดเป็นคำ · <b>ห้ามมีลิงก์โซเชียล</b> · <b>ห้ามเซ็นเซอร์คำหยาบ</b>เว้นแต่ในเสียงร้องถูกบี๊บจริง
+    </div>
+    <div class="rules" style="border-color: rgba(207,107,98,0.4); background: rgba(168,58,50,0.1);">
+      ⚠️ ถ้าก็อปจากแอปดูเนื้อเพลง (เช่นแอปเล่นเพลงที่ขึ้น lyrics) บางทีการขึ้นบรรทัดใหม่ในแต่ละท่อนจะหายไปตอนวาง เหลือแค่ช่องว่างระหว่างประโยค — ถ้าเจอแบบนี้ระบบจะเตือนไว้ให้ แต่การขึ้นบรรทัดใหม่ที่ถูกต้องต้องแก้เองตามจังหวะร้องจริง
+    </div>
+  </header>
+
+  <label class="field-label" for="input">วางเนื้อเพลงตรงนี้</label>
+  <textarea id="input" placeholder="[Verse 1]
+If you don't love me, say it
+Say it straight to my face (x2)
+..."></textarea>
+  <button class="primary" onclick="formatLyrics()">จัดฟอร์แมตเนื้อเพลง</button>
+
+  <div class="result" id="result">
+    <div class="sheet">
+      <div class="sheet-head">
+        <span class="sheet-title">พร้อมส่ง DISTROKID <span class="stamp">แก้แล้ว</span></span>
+        <div class="btn-group">
+          <button class="edit-btn" id="editToggleBtn" onclick="toggleEdit()">แก้ไข</button>
+          <button class="copy-btn" onclick="copyOutput()">คัดลอก</button>
+        </div>
+      </div>
+      <pre class="output" id="output"></pre>
+      <textarea class="output-edit" id="outputEdit" spellcheck="false"></textarea>
+      <p class="edit-hint" id="editHint">แตะ "แก้ไข" แล้วพิมพ์ทับให้ตรงกับที่ Suno ร้องจริง เช่น เติมท่อนซ้ำที่ AI ร้องเพิ่ม หรือแก้คำที่ออกเสียงเพี้ยนจากต้นฉบับ — เสร็จแล้วกด "บันทึก" ก่อนค่อยคัดลอก</p>
+      <textarea id="fallbackCopyArea" readonly style="display:none; width:100%; min-height:160px; margin-top:12px; font-family:'IBM Plex Mono',monospace; font-size:13px; padding:10px; border-radius:8px; border:1.5px solid var(--red-soft); background:#fffef8; color:var(--ink);"></textarea>
+      <div id="fallbackHint" style="display:none; margin-top:8px; font-size:12.5px; color:var(--red); line-height:1.6;">
+        คัดลอกอัตโนมัติไม่ได้ในเบราว์เซอร์นี้ — ข้อความถูกเลือกไว้ในกล่องสีแดงด้านบนแล้ว แตะค้างแล้วเลือก "คัดลอก" จากเมนูที่ขึ้นมาได้เลย
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>แก้ให้อัตโนมัติแล้ว</h2>
+      <div class="fix-chips" id="fixChips"></div>
+    </div>
+
+    <div class="panel">
+      <h2>ต้องเช็คเอง</h2>
+      <ul class="warn-list" id="warnList"></ul>
+    </div>
+  </div>
+
+  <footer>
+    เครื่องมือนี้ช่วยจัดรูปแบบตามกติกาที่ DistroKid/Musixmatch เผยแพร่ไว้ แต่การอนุมัติเนื้อเพลงขึ้นอยู่กับผู้ตรวจสอบจริงของแต่ละแพลตฟอร์ม
+  </footer>
+</div>
+
+<script>
+const TAG_RE = /^[\[\(]\s*(verse|chorus|pre-?chorus|bridge|hook|intro|outro|refrain|interlude|breakdown|tag|drop|instrumental)\b[^\]\)]*[\]\)]\s*$/i;
+const LEADING_TAG_RE = /^[\[\(]\s*(verse|chorus|pre-?chorus|bridge|hook|intro|outro|refrain|interlude|breakdown|tag|drop|instrumental)\b[^\]\)]*[\]\)]\s*/i;
+const BARE_TAG_RE = /^(verse|chorus|pre-?chorus|bridge|hook|intro|outro|refrain|interlude|breakdown|tag|drop|instrumental)\s*\d*\s*:?$/i;
+const REPEAT_LINE_RE = /^\(?\s*[a-zA-Z\u0E00-\u0E7F]*\s*[xX]\s*\d+\s*\)?$/;
+const REPEAT_TRAILING_RE = /\(\s*[xX]\s*\d+\s*\)\s*$/;
+const TRAILING_PUNCT_RE = /[.,;:'"”’…\-–—]+$/;
+const NUMBER_WORD_RE = /\b(10|[1-9])\b/;
+const SOCIAL_LINK_RE = /(https?:\/\/|www\.|\b(instagram|facebook|fb\.com|tiktok|twitter|x\.com|youtube|youtu\.be|spotify|line\s*id|linktr\.ee)\b\s*[:@]?\s*[\w.\/]*)/i;
+const CENSORED_WORD_RE = /\b[a-zA-Z]{1,3}[\*]{2,}[a-zA-Z]{0,2}\b|\b[a-zA-Z]+\*[a-zA-Z]*\*[a-zA-Z]*\b/;
+
+function formatLyrics(){
+  const raw = document.getElementById('input').value;
+  if(!raw.trim()){
+    document.getElementById('result').classList.remove('show');
+    return;
+  }
+
+  isEditing = false;
+  document.getElementById('outputEdit').style.display = 'none';
+  document.getElementById('output').style.display = 'block';
+  document.getElementById('editHint').classList.remove('show');
+  const editBtn = document.getElementById('editToggleBtn');
+  editBtn.textContent = 'แก้ไข';
+  editBtn.classList.remove('editing');
+
+  const rawLines = raw.replace(/\r\n/g,'\n').split('\n');
+
+  let removedTags = 0, removedRepeatMarkers = 0, capitalized = 0, trailingPunct = 0;
+  const longLineWarnings = [];
+  const numberWarnings = [];
+  const repeatWarnings = [];
+  const socialWarnings = [];
+  const censorWarnings = [];
+  const mergedLineWarnings = [];
+
+  const cleaned = [];
+  rawLines.forEach((line, idx) => {
+    let t = line.trim();
+
+    if(t === ''){
+      cleaned.push('');
+      return;
+    }
+
+    if(TAG_RE.test(t) || BARE_TAG_RE.test(t)){
+      removedTags++;
+      cleaned.push('');
+      return;
+    }
+
+    if(LEADING_TAG_RE.test(t)){
+      t = t.replace(LEADING_TAG_RE, '').trim();
+      removedTags++;
+      cleaned.push(''); // start the new section on its own blank line
+      if(t === ''){
+        return;
+      }
+    }
+
+    if(REPEAT_LINE_RE.test(t)){
+      removedRepeatMarkers++;
+      repeatWarnings.push(`บรรทัด ${idx+1}: มีแท็กซ้ำ "${line.trim()}" — ต้องพิมพ์เนื้อร้องที่ซ้ำนั้นให้ครบทุกบรรทัดแทน`);
+      cleaned.push('');
+      return;
+    }
+
+    if(REPEAT_TRAILING_RE.test(t)){
+      repeatWarnings.push(`บรรทัด ${idx+1}: ท้ายบรรทัดมี "(xN)" — ตัดออกแล้ว แต่ต้องพิมพ์บรรทัดซ้ำนั้นเพิ่มเองด้วย`);
+      t = t.replace(REPEAT_TRAILING_RE, '').trim();
+    }
+
+    if(/^[a-z]/.test(t)){
+      t = t[0].toUpperCase() + t.slice(1);
+      capitalized++;
+    }
+
+    const beforePunct = t;
+    t = t.replace(TRAILING_PUNCT_RE, '').trimEnd();
+    if(t !== beforePunct) trailingPunct++;
+
+    if(NUMBER_WORD_RE.test(t)){
+      numberWarnings.push(`บรรทัด ${idx+1}: มีตัวเลข 1–10 — ให้สะกดเป็นตัวหนังสือ เช่น "2" → "two" (หรือภาษาที่ใช้ในเนื้อเพลง)`);
+    }
+
+    if(SOCIAL_LINK_RE.test(t)){
+      socialWarnings.push(`บรรทัด ${idx+1}: ดูเหมือนมีลิงก์/ชื่อโซเชียลมีเดียปน — ต้องลบออกจากเนื้อเพลงเอง`);
+    }
+
+    if(CENSORED_WORD_RE.test(t)){
+      censorWarnings.push(`บรรทัด ${idx+1}: มีคำที่เซ็นเซอร์ด้วย * — ใส่ได้เฉพาะถ้าคำนั้นถูกเบลอ/บี๊บในเสียงร้องจริง ถ้าในเพลงร้องเต็มคำ ต้องพิมพ์เต็มคำที่นี่ด้วย`);
+    }
+
+    const wordCount = t.split(/\s+/).filter(Boolean).length;
+    if(wordCount > 18 || t.length > 110){
+      mergedLineWarnings.push(`บรรทัด ${idx+1}: ยาวผิดปกติ (${wordCount} คำ) — ดูเหมือนตอนวาง หลายบรรทัดเดิมถูกรวมเป็นบรรทัดเดียว (มักเกิดกับการก็อปจากแอปดูเนื้อเพลง) ต้องขึ้นบรรทัดใหม่ให้ตรงกับตอนร้องด้วยตัวเอง`);
+    } else if(wordCount > 12 || t.length > 70){
+      longLineWarnings.push(`บรรทัด ${idx+1}: ยาวไป (${wordCount} คำ) — ลองตัดแบ่งเป็นสองบรรทัดตามจังหวะร้อง`);
+    }
+
+    cleaned.push(t);
+  });
+
+  // collapse multiple blank lines into one, trim leading/trailing blanks
+  const collapsed = [];
+  let lastBlank = false;
+  cleaned.forEach(l => {
+    const isBlank = l === '';
+    if(isBlank && lastBlank) return;
+    collapsed.push(l);
+    lastBlank = isBlank;
+  });
+  while(collapsed.length && collapsed[0] === '') collapsed.shift();
+  while(collapsed.length && collapsed[collapsed.length-1] === '') collapsed.pop();
+
+  document.getElementById('output').textContent = collapsed.join('\n');
+  window.__cleanLyricsText = collapsed.join('\n');
+  renderOutputDisplay(window.__cleanLyricsText);
+
+  const chips = [];
+  if(removedTags) chips.push(`ลบแท็กท่อน ${removedTags} จุด`);
+  if(removedRepeatMarkers) chips.push(`ลบแท็กซ้ำ (xN) ${removedRepeatMarkers} จุด`);
+  if(capitalized) chips.push(`ปรับตัวพิมพ์ใหญ่ต้นบรรทัด ${capitalized} บรรทัด`);
+  if(trailingPunct) chips.push(`ตัดวรรคตอนท้ายบรรทัด ${trailingPunct} บรรทัด`);
+  if(chips.length === 0) chips.push('ไม่มีจุดที่ต้องแก้อัตโนมัติ — เนื้อเพลงสะอาดอยู่แล้ว');
+
+  const chipsEl = document.getElementById('fixChips');
+  chipsEl.innerHTML = chips.map(c => `<span class="chip">${c}</span>`).join('');
+
+  const warnings = [...mergedLineWarnings, ...repeatWarnings, ...socialWarnings, ...censorWarnings, ...numberWarnings, ...longLineWarnings];
+  const warnEl = document.getElementById('warnList');
+  if(warnings.length === 0){
+    warnEl.innerHTML = `<li class="empty-note" style="background:transparent;border-left:none;padding-left:0;">ไม่พบจุดที่ต้องเช็คเพิ่ม — อย่าลืมเช็คด้วยตาอีกทีว่าไม่มีชื่อคนร้อง หรือลิงก์โซเชียลติดมาในเนื้อเพลง</li>`;
+  } else {
+    warnEl.innerHTML = warnings.map(w => `<li><span class="warn-mark">✎</span>${w}</li>`).join('');
+  }
+
+  document.getElementById('result').classList.add('show');
+}
+
+let isEditing = false;
+
+function renderOutputDisplay(text){
+  const escapeHtml = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  document.getElementById('output').innerHTML = text.split('\n')
+    .map(l => l === '' ? '<span class="gap-marker">·&nbsp;ขึ้นท่อนใหม่&nbsp;·</span>' : escapeHtml(l))
+    .join('\n');
+}
+
+function toggleEdit(){
+  const pre = document.getElementById('output');
+  const ta = document.getElementById('outputEdit');
+  const btn = document.getElementById('editToggleBtn');
+  const hint = document.getElementById('editHint');
+
+  if(!isEditing){
+    ta.value = window.__cleanLyricsText || '';
+    pre.style.display = 'none';
+    ta.style.display = 'block';
+    hint.classList.add('show');
+    btn.textContent = 'บันทึก';
+    btn.classList.add('editing');
+    ta.focus();
+    isEditing = true;
+  } else {
+    window.__cleanLyricsText = ta.value;
+    document.getElementById('output').textContent = ta.value;
+    renderOutputDisplay(ta.value);
+    ta.style.display = 'none';
+    pre.style.display = 'block';
+    hint.classList.remove('show');
+    btn.textContent = 'แก้ไข';
+    btn.classList.remove('editing');
+    isEditing = false;
+  }
+}
+
+function copyOutput(){
+  const text = window.__cleanLyricsText || '';
+  if(!text) return;
+
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(showCopied).catch(() => legacyCopy(text));
+  } else {
+    legacyCopy(text);
+  }
+}
+
+function legacyCopy(text){
+  const ta = document.getElementById('fallbackCopyArea');
+  ta.style.display = 'block';
+  ta.value = text;
+  ta.focus();
+  ta.select();
+  ta.setSelectionRange(0, text.length);
+
+  let ok = false;
+  try{ ok = document.execCommand('copy'); }catch(e){ ok = false; }
+
+  if(ok){
+    ta.style.display = 'none';
+    document.getElementById('fallbackHint').style.display = 'none';
+    showCopied();
+  } else {
+    document.getElementById('fallbackHint').style.display = 'block';
+  }
+}
+
+function showCopied(){
+  const btn = document.querySelector('.copy-btn');
+  const old = btn.textContent;
+  btn.textContent = 'คัดลอกแล้ว ✓';
+  setTimeout(() => btn.textContent = old, 1500);
+}
+</script>
+</body>
+</html>
